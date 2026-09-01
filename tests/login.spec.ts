@@ -1,56 +1,43 @@
 import { test, expect } from '@playwright/test';
+import { LoginPage } from '../pages/LoginPage';
 
 test.describe('Login Functionality', () => {
 
   test('TC_LOGIN_001 - Login with valid credentials', async ({ page }) => {
 
-    await page.goto('https://www.saucedemo.com/');
+    const loginPage = new LoginPage(page);
 
-    await page.locator('[data-test="username"]').fill('standard_user');
-    await page.locator('[data-test="password"]').fill('secret_sauce');
-
-    await page.locator('[data-test="login-button"]').click();
+    await loginPage.navigate();
+    await loginPage.login('standard_user', 'secret_sauce');
 
     await expect(page).toHaveURL(/inventory/);
-
-    await expect(
-      page.locator('[data-test="title"]')
-    ).toHaveText('Products');
+    await expect(loginPage.pageTitle).toHaveText('Products');
   });
 
 
   test('TC_LOGIN_002 - Login with invalid password', async ({ page }) => {
 
-    await page.goto('https://www.saucedemo.com/');
+    const loginPage = new LoginPage(page);
 
-    await page.locator('[data-test="username"]').fill('standard_user');
-    await page.locator('[data-test="password"]').fill('WrongPassword123');
+    await loginPage.navigate();
+    await loginPage.login('standard_user', 'WrongPassword123');
 
-    await page.locator('[data-test="login-button"]').click();
-
-    await expect(
-      page.locator('[data-test="error"]')
-    ).toBeVisible();
-
-    await expect(
-      page.locator('[data-test="error"]')
-    ).toContainText('Username and password do not match');
+    await expect(loginPage.errorMessage).toBeVisible();
+    await expect(loginPage.errorMessage)
+      .toContainText('Username and password do not match');
   });
 
 
   test('TC_LOGIN_003 - Login with empty credentials', async ({ page }) => {
 
-    await page.goto('https://www.saucedemo.com/');
+    const loginPage = new LoginPage(page);
 
-    await page.locator('[data-test="login-button"]').click();
+    await loginPage.navigate();
+    await loginPage.clickLogin();
 
-    await expect(
-      page.locator('[data-test="error"]')
-    ).toBeVisible();
-
-    await expect(
-      page.locator('[data-test="error"]')
-    ).toContainText('Username is required');
+    await expect(loginPage.errorMessage).toBeVisible();
+    await expect(loginPage.errorMessage)
+      .toContainText('Username is required');
   });
 
 });
